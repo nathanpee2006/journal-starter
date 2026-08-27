@@ -87,10 +87,10 @@ async def update_entry(
     empty strings and 300-character bodies — see ``TestUpdateEntry`` in
     tests/test_api.py.
     """
-    entry_update = entry_update.model_dump(
+    update_data = entry_update.model_dump(
         exclude_unset=True
     )  # Convert to dict, excluding unset fields
-    result = await entry_service.update_entry(entry_id, entry_update)
+    result = await entry_service.update_entry(entry_id, update_data)
     if not result:
         raise HTTPException(status_code=404, detail="Entry not found")
 
