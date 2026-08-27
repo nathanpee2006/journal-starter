@@ -46,7 +46,6 @@ class EntryService:
         if not existing_entry:
             logger.warning("Entry %s not found. Update aborted.", entry_id)
             return None
-
         updated_data = {
             **existing_entry,
             **updated_data,
