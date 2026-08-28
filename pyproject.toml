@@ -11,6 +11,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "pydantic-settings",
     "openai>=2.53.0",
+    "tenacity>=9.1.4",
 ]
 
 [project.optional-dependencies]
