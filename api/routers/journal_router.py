@@ -6,7 +6,11 @@ from api.config import Settings, get_settings
 from api.models.entry import AnalysisResponse, Entry, EntryCreate, EntryUpdate
 from api.repositories.postgres_repository import PostgresDB
 from api.services.entry_service import EntryService
-from api.services.llm_service import analyze_journal_entry
+from api.services.llm_service import (
+    AnalysisServiceError,
+    AnalysisUnavailableError,
+    analyze_journal_entry,
+)
 
 router = APIRouter()
 
@@ -147,10 +151,11 @@ async def analyze_entry(entry_id: str, entry_service: EntryService = Depends(get
 
     try:
         return await analyze_journal_entry(entry_id, entry_text)
-    except NotImplementedError as e:
+    except AnalysisUnavailableError as e:
         raise HTTPException(
-            status_code=501,
-            detail="LLM analysis not yet implemented - see api/services/llm_service.py",
+            status_code=503, detail="Analysis service temporarily unavailable, try again shortly"
         ) from e
+    except AnalysisServiceError as e:
+        raise HTTPException(status_code=502, detail="Analysis service failed") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {e!s}") from e
+        raise HTTPException(status_code=500, detail="An unexpected error occurred") from e
