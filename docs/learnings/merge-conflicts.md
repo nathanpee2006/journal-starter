@@ -1,7 +1,7 @@
 10/26/2026
 
-# What I deployed?
-None. Mostly dealt with merge conflicts and trying to get the different APIs to work.
+# What did I do?
+Mostly dealt with merge conflicts and trying to get the different APIs to work.
 
 # What worked?
 Currently, got CRUD APIs working. However, AI analysis is still in progress.
