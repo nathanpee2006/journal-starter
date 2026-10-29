@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
-from httpx import ASGITransport, AsyncClient, Request, Response
+from httpx2 import ASGITransport, AsyncClient, Request, Response
 from openai import (
     APIConnectionError,
     APITimeoutError,

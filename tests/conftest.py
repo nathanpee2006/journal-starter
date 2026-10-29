@@ -10,7 +10,7 @@ This file sets up test fixtures that are shared across all tests, including:
 from collections.abc import AsyncGenerator
 
 import pytest
-from httpx import ASGITransport, AsyncClient
+from httpx2 import ASGITransport, AsyncClient
 from pydantic import ValidationError
 
 from api.config import get_settings

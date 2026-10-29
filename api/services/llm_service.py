@@ -9,10 +9,13 @@ Set OPENAI_API_KEY, OPENAI_BASE_URL, and OPENAI_MODEL in your .env file.
 Settings are loaded by ``api.config.Settings``.
 """
 
-import httpx
+import json
+
+import httpx2
 from openai import AsyncOpenAI
 
 from api.config import get_settings
+from api.models.entry import AnalysisResponse
 
 
 class InvalidAnalysisResponseError(ValueError):
@@ -29,26 +32,9 @@ def _default_client() -> AsyncOpenAI:
     return AsyncOpenAI(
         api_key=settings.openai_api_key.get_secret_value(),
         base_url=settings.openai_base_url,
-        timeout=httpx.Timeout(60.0, connect=5.0),
+        timeout=httpx2.Timeout(60.0, connect=5.0),
         max_retries=1,
     )
-
-
-# def _is_retryable(exc: BaseException) -> bool:
-#     """Return True if the exception is retryable (rate limit, timeout, or server error)."""
-#     if isinstance(exc, APIStatusError):
-#         return exc.status_code == 429 or exc.status_code >= 500
-#     return isinstance(exc, (APITimeoutError, APIConnectionError))
-
-
-# def _response_refusal(response: object) -> str | None:
-#     """Return the model refusal message, if the response contains one."""
-#     for output_item in getattr(response, "output", []):
-#         for content_item in getattr(output_item, "content", []):
-#             refusal = getattr(content_item, "refusal", None)
-#             if refusal:
-#                 return refusal
-#     return None
 
 
 async def analyze_journal_entry(
@@ -101,10 +87,70 @@ async def analyze_journal_entry(
 
     request_failed = True
     try:
-        raise NotImplementedError(
-            "Chapter 9: implement the request and validation here. "
-            "See docs/09-ai-analysis.md for the walkthrough."
+        analysis_instructions = (
+            "Analyze the following journal entry and return a JSON object "
+            "with the following fields: "
+            '"sentiment" (one of "positive", "negative", or "neutral"), '
+            '"summary" (a two-sentence summary of the entry), and '
+            '"topics" (a list of 2-4 key topics mentioned in the entry). '
+            "Do not include any other fields. "
+            "If you cannot provide a complete analysis, return an error."
         )
+
+        analysis_schema = {
+            "type": "object",
+            "properties": {
+                "sentiment": {
+                    "type": "string",
+                    "enum": ["positive", "negative", "neutral"],
+                },
+                "summary": {"type": "string"},
+                "topics": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["sentiment", "summary", "topics"],
+            "additionalProperties": False,
+        }
+        response = await client.responses.create(
+            model=get_settings().openai_model,
+            instructions=analysis_instructions,
+            input=entry_text,
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": "journal_analysis",
+                    "strict": True,
+                    "schema": analysis_schema,
+                }
+            },
+        )
+
+        # raise InvalidAnalysisResponseError for any unfinished response, any refusal, or empty or whitespace-only output text
+        if response.status != "completed":
+            raise InvalidAnalysisResponseError("Response is not completed.")
+        for output_item in response.output:
+            # verify if content is missing for message type, and raise InvalidAnalysisResponseError if so
+            if output_item.type == "message" and output_item.content is None:
+                raise InvalidAnalysisResponseError("Response message is missing.")
+            if output_item.type == "refusal":
+                raise InvalidAnalysisResponseError("Response was refused.")
+        if response.output_text is None or response.output_text.strip() == "":
+            raise InvalidAnalysisResponseError("Response output text is empty.")
+
+        data = json.loads(response.output_text)  # raises JSONDecodeError if invalid
+        if not isinstance(data, dict):
+            raise InvalidAnalysisResponseError("Response output is not a dictionary.")
+
+        analysis = AnalysisResponse.model_validate(
+            {
+                "entry_id": entry_id,
+                "sentiment": data.get("sentiment"),
+                "summary": data.get("summary"),
+                "topics": data.get("topics"),
+            }
+        )
+        request_failed = False
+        return analysis.model_dump()
+
     finally:
         if owns_client:
             try:

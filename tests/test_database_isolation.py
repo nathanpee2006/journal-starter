@@ -1,5 +1,5 @@
 import pytest
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from api.models.entry import EntryCreate
 from api.repositories.postgres_repository import PostgresDB

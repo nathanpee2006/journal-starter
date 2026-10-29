@@ -170,7 +170,8 @@ async def analyze_entry(entry_id: str, entry_service: EntryServiceDependency) ->
         return AnalysisResponse.model_validate(analysis)
     except NotImplementedError as e:
         raise HTTPException(
-            status_code=503, detail="Analysis service temporarily unavailable, try again shortly"
+            status_code=501,
+            detail="LLM analysis not yet implemented - see api/services/llm_service.py",
         ) from e
     except (ValidationError, JSONDecodeError, InvalidAnalysisResponseError) as e:
         _log_analysis_failure(entry_id, e)

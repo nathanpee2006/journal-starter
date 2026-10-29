@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import asyncpg
 import pytest
 from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
+from httpx2 import ASGITransport, AsyncClient
 from pydantic import SecretStr
 
 from api import main

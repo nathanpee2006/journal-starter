@@ -2,7 +2,7 @@ import json
 from unittest.mock import AsyncMock
 
 import pytest
-from httpx import Request, Response
+from httpx2 import Request, Response
 from openai import APIConnectionError, APITimeoutError, AuthenticationError, RateLimitError
 from pydantic import ValidationError
 

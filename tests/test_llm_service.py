@@ -3,7 +3,7 @@
 import json
 from datetime import UTC, datetime
 
-import httpx
+import httpx2
 import pytest
 from openai import AsyncOpenAI, InternalServerError
 from pydantic import ValidationError
@@ -62,17 +62,17 @@ async def provider_client():
     def create(payload: dict, status: int = 200):
         requests = []
 
-        def respond(request: httpx.Request):
+        def respond(request: httpx2.Request):
             assert request.method == "POST"
             assert request.url.path == "/v1/responses"
             requests.append(json.loads(request.content))
-            return httpx.Response(status, json=payload)
+            return httpx2.Response(status, json=payload)
 
         client = AsyncOpenAI(
             api_key="test-placeholder",
             base_url="https://example.invalid/v1",
             max_retries=0,
-            http_client=httpx.AsyncClient(transport=httpx.MockTransport(respond)),
+            http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(respond)),
         )
         clients.append(client)
         return client, requests
@@ -88,7 +88,7 @@ async def test_default_client_has_bounded_timeout_and_retries():
         assert client.api_key == get_settings().openai_api_key.get_secret_value()
         assert str(client.base_url).rstrip("/") == get_settings().openai_base_url.rstrip("/")
         assert client.max_retries == 1
-        assert isinstance(client.timeout, httpx.Timeout)
+        assert isinstance(client.timeout, httpx2.Timeout)
         assert client.timeout.connect == 5.0
         assert client.timeout.read == 60.0
         assert client.timeout.write == 60.0
