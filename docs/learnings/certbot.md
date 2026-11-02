@@ -66,6 +66,8 @@ Ask for help or search for solutions at https://community.letsencrypt.org. See t
 
 From this it showed that Let's Encrypt HTTP-01 Challenge failed. 
 
+Certbot is used as the ACME client to communicate with Let's Encrypt and automate SSL certificate issuance and renewal using the HTTP-01 challenge.
+
 How it works:
 - Certbot requests a certificate or renewal from Let's Encrypt.
 - Let's Encrypt provides an HTTP-01 challenge token.
