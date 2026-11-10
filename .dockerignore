@@ -1,0 +1,37 @@
+# Version control and CI/CD
+.git
+.gitignore
+.gitattributes
+.github/
+
+# Environment variables and secrets
+.env
+.env-sample
+
+# Python caches, virtual environments, and configuration
+.venv/
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE and workspace configuration
+.vscode/
+.devcontainer/
+.editorconfig
+.pre-commit-config.yaml
+
+# Documentation and repository info
+docs/
+AGENTS.md
+README.md
+LICENSE
+
+# Host-specific orchestration files
+docker-compose*.yml
+
+# Auxiliary scripts and test suites (exclude if not needed in production)
+scripts/
+tests/
+pytest.ini
