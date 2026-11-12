@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: read
-  id_token: write
+  id-token: write
 
 concurrency:
   group: ci-${{ github.ref }}
